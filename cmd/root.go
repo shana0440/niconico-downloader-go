@@ -9,6 +9,7 @@ import (
 var (
 	Account  string
 	Password string
+	OutDir   string
 
 	rootCmd = &cobra.Command{
 		Use:   "nico",
@@ -19,6 +20,7 @@ var (
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&Account, "account", "a", "", "user account")
 	rootCmd.PersistentFlags().StringVarP(&Password, "password", "p", "", "account password")
+	rootCmd.PersistentFlags().StringVarP(&OutDir, "out-dir", "o", "", "output directory")
 }
 
 func Execute() {
