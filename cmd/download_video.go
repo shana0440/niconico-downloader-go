@@ -3,6 +3,7 @@ package cmd
 import (
 	"log"
 
+	"github.com/shana0440/niconico-downloader-go/pkg/auth"
 	"github.com/spf13/cobra"
 )
 
@@ -12,7 +13,8 @@ var (
 		Short: "A downloader that used to download niconico video.",
 
 		Run: func(cmd *cobra.Command, args []string) {
-			log.Println("Hello", Account, Password)
+			session := auth.Login(Account, Password)
+			log.Println(session)
 		},
 	}
 )
