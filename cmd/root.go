@@ -7,9 +7,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "nico",
-	Short: "A nico nico downloader",
+var (
+	Account  string
+	Password string
+
+	rootCmd = &cobra.Command{
+		Use:   "nico",
+		Short: "A nico nico downloader",
+	}
+)
+
+func init() {
+	rootCmd.PersistentFlags().StringVarP(&Account, "account", "a", "", "user account")
+	rootCmd.PersistentFlags().StringVarP(&Password, "password", "p", "", "account password")
 }
 
 func Execute() {
