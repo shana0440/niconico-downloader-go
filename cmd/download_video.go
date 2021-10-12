@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/shana0440/niconico-downloader-go/pkg/auth"
+	"github.com/shana0440/niconico-downloader-go/pkg/downloader"
 	"github.com/spf13/cobra"
 )
 
@@ -14,6 +15,9 @@ var (
 
 		Run: func(cmd *cobra.Command, args []string) {
 			session := auth.Login(Account, Password)
+			for _, url := range args {
+				downloader.DownloadVideo(url, OutDir, session)
+			}
 			log.Println(session)
 		},
 	}

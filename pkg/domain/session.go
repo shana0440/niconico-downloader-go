@@ -1,9 +1,15 @@
 package domain
 
-import "net/http"
+import (
+	"log"
+	"net/http"
+	"net/http/cookiejar"
+	"net/url"
+)
 
 type Session struct {
-	Cookies map[string]*http.Cookie
+	URL     *url.URL
+	Cookies []*http.Cookie
 }
 
 func MakeSession(resp *http.Response) Session {
@@ -11,16 +17,27 @@ func MakeSession(resp *http.Response) Session {
 		return Session{}
 	}
 
-	cookies := make(map[string]*http.Cookie)
-	for _, cookie := range resp.Cookies() {
-		cookies[cookie.Name] = cookie
-	}
 	return Session{
-		Cookies: cookies,
+		URL:     resp.Request.URL,
+		Cookies: resp.Cookies(),
 	}
 }
 
 func (s *Session) IsLoginFailure() bool {
-	_, ok := s.Cookies["user_session"]
-	return !ok
+	for _, cookie := range s.Cookies {
+		if cookie.Name == "user_session" {
+			return false
+		}
+	}
+	return true
+}
+
+func (s *Session) WithClient(client *http.Client) *http.Client {
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	jar.SetCookies(s.URL, s.Cookies)
+	client.Jar = jar
+	return client
 }
