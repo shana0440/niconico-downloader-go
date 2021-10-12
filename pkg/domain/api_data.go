@@ -163,7 +163,7 @@ type APIData struct {
 					ContentKeyTimeout int           `json:"contentKeyTimeout"`
 					Priority          float64       `json:"priority"`
 					TransferPresets   []interface{} `json:"transferPresets"`
-					Urls              []struct {
+					URLs              []struct {
 						URL             string `json:"url"`
 						IsWellKnownPort bool   `json:"isWellKnownPort"`
 						IsSsl           bool   `json:"isSsl"`

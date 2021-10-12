@@ -1,19 +1,28 @@
 package downloader
 
 import (
+	"bytes"
+	"encoding/json"
 	"log"
 	"net/http"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/shana0440/niconico-downloader-go/pkg/domain"
+	"github.com/shana0440/niconico-downloader-go/pkg/domain/api_session"
 )
 
 func DownloadVideo(url, outDir string, session domain.Session) {
 	client := session.WithClient(&http.Client{})
+	log.Println("Fetching API data...")
 	apiData := fetchAPIData(url, client)
-	log.Println(apiData)
+	log.Println("Fetched API data")
+	log.Println("Fetching session data...")
+	sessionData := fetchSessionData(apiData, client)
+	log.Println(sessionData)
+	log.Println("Fetched session data")
 	// Start heart beat
 	// Download video
+	// Cancel heart beat
 }
 
 func fetchAPIData(url string, client *http.Client) domain.APIData {
@@ -23,7 +32,7 @@ func fetchAPIData(url string, client *http.Client) domain.APIData {
 	}
 
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
+	if resp.StatusCode > 299 {
 		log.Fatalf("Status code error: %s %s", url, resp.Status)
 	}
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
@@ -42,3 +51,23 @@ func fetchAPIData(url string, client *http.Client) domain.APIData {
 	apiData := domain.MakeAPIData(rawAPIData)
 	return apiData
 }
+
+func fetchSessionData(apiData domain.APIData, client *http.Client) api_session.APISessionBody {
+	url := apiData.Media.Delivery.Movie.Session.URLs[0].URL
+	sessionPayload := api_session.MakePayload(apiData)
+	payload, err := json.Marshal(sessionPayload)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	resp, err := client.Post(url+"?_format=json", "application/json", bytes.NewBuffer(payload))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if resp.StatusCode > 299 {
+		log.Fatalf("Status code error: %s %s", url, resp.Status)
+	}
+	defer resp.Body.Close()
+	body := api_session.MakeBody(resp)
+	return body
+}
+
