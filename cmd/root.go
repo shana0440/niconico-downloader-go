@@ -20,7 +20,7 @@ var (
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&Account, "account", "a", "", "user account")
 	rootCmd.PersistentFlags().StringVarP(&Password, "password", "p", "", "account password")
-	rootCmd.PersistentFlags().StringVarP(&OutDir, "out-dir", "o", "", "output directory")
+	rootCmd.PersistentFlags().StringVarP(&OutDir, "out-dir", "o", "./output", "output directory")
 }
 
 func Execute() {

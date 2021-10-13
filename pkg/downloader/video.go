@@ -5,12 +5,15 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/shana0440/niconico-downloader-go/pkg/domain"
 	"github.com/shana0440/niconico-downloader-go/pkg/domain/api_session"
 	"github.com/shana0440/niconico-downloader-go/pkg/domain/heartbeat"
+	"github.com/shana0440/niconico-downloader-go/pkg/hls"
 )
 
 func DownloadVideo(url, outDir string, session domain.Session) {
@@ -19,7 +22,12 @@ func DownloadVideo(url, outDir string, session domain.Session) {
 	sessionURL := apiData.Media.Delivery.Movie.Session.URLs[0].URL
 	sessionData := fetchSessionData(sessionURL, apiData, client)
 	canceller := startHeartBeat(sessionURL, sessionData, client)
-	// Download video
+	// Replace / to - to avoid conflict with path separator
+	title := apiData.Video.Title
+	filename := strings.ReplaceAll(title, "/", "-") + ".ts"
+	destPath := filepath.Join(outDir, filename)
+	log.Println("Start downloading " + title + " ...")
+	downloadVideo(sessionData, destPath, client)
 	canceller <- struct{}{}
 	close(canceller)
 }
@@ -99,4 +107,9 @@ func startHeartBeat(sessionURL string, apiSessionBody api_session.APISessionBody
 		}
 	}()
 	return canceller
+}
+
+func downloadVideo(apiSessionBody api_session.APISessionBody, destPath string, client *http.Client) {
+	masterURL := apiSessionBody.Data.Session.ContentURI
+	hls.DownloadVOD(masterURL, apiSessionBody.Data.Session.RecipeID, destPath)
 }
